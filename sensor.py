@@ -22,15 +22,15 @@ class Sensor:
         return f"Last value of sensor {self.id} : {self.last_value}"
     
     def save_data(self):
-        new_entry_registry = [{"date" : str(datetime.now()), "value": self.last_value}]
+        new_entry_registry = {"date" : str(datetime.now()), "value": self.last_value}
         current_registry = self.get_data_history()
         if current_registry is None:
-            new_registry = {self.id : new_entry_registry}
+            new_registry = {self.id : [new_entry_registry]}
         else:
             current_registry[self.id].append(new_entry_registry)
             new_registry = current_registry
         with open("sensor_value_registry.json", mode="w", encoding="utf-8") as write_file:
-            dump(new_registry, write_file)
+            dump(new_registry, write_file, indent=4)
     
     def get_data_history(self):
         try:
