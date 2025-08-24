@@ -2,6 +2,7 @@ from random import uniform
 from json import dump, load, loads, dumps
 from sensorStatusError import SensorStatusError
 from datetime import datetime
+import requests
 
 class Sensor:
     def __init__(self, id, status):
@@ -13,7 +14,8 @@ class Sensor:
         if self.status != "On":
             raise SensorStatusError(f"Sensor can only operate if status is On. ({self.status=})")
         elif self.last_value is None:
-            self.last_value = uniform(0.0, 100.0)
+            #self.last_value = uniform(0.0, 100.0)
+            self.last_value = float(self.simulate_get_data_from_api())
             self.save_data()
     
     def display_data(self):
@@ -41,10 +43,18 @@ class Sensor:
         try:
             with open("sensor_value_registry.json", mode="r", encoding="utf-8") as read_file:
                 data_history_json = load(read_file)
-                print(dumps(data_history_json, indent=2))
+                #print(dumps(data_history_json, indent=2))
         except:
             print("File does not yet exist")
     
+    def simulate_get_data_from_api(self):
+        reponse = requests.get("https://thingspeak.mathworks.com/channels/159156/feed.json").json()
+        return reponse["feeds"][0]["field3"]
+    
+    def simulate_send_data_from_sensor_to_api(self):
+        requests.post("https://httpbin.org/post", data={"value", str(self.last_value)})
+    
+
 def main():
     temperature_sensor = Sensor("A01", "On")
     try:
@@ -54,6 +64,7 @@ def main():
     else:
         print(temperature_sensor.display_data())
         temperature_sensor.display_history()
+        temperature_sensor.simulate_send_data_from_sensor_to_api()
 
 if __name__ == "__main__":
     main()
