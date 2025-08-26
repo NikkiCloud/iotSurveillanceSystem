@@ -12,6 +12,7 @@ class DataAnalysis:
                 return load(w_file)
         except:
             print("Can't find this file")
+            return {}
 
 
     def convert_dict_to_dataframe(self):
