@@ -11,7 +11,12 @@ async def root():
 
 @app.get("/history/{sensor_id}")
 async def get_sensor_data_history(sensor_id : str):
-    pass
+    try:
+        with open("sensor_value_registry.json", mode="r", encoding="utf-8") as read_file:
+            return {"history" : load(read_file)}
+    except:
+        print("File does not yet exist")
+
 
 @app.post("/sensors/{sensor_id}/{value_measured}")
 async def send_sensor_data(sensor_id: str, value_measured: float):
