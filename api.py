@@ -9,10 +9,15 @@ app = FastAPI()
 async def root():
     return {"message": "Home Surveillance System"}
 
+@app.get("/lastvalue/{sensor_id}")
+async def get_last_value(sensor_id : str):
+    data_history = await obtain_data_history()
+    return data_history[-1]["value"]
+
 @app.get("/history/{sensor_id}")
 async def get_sensor_data_history(sensor_id : str):
     try:
-        with open("sensor_value_registry.json", mode="r", encoding="utf-8") as read_file:
+        with open("sensor_value_registry_without_id.json", mode="r", encoding="utf-8") as read_file:
             return {"history" : load(read_file)}
     except:
         print("File does not yet exist")
@@ -20,27 +25,29 @@ async def get_sensor_data_history(sensor_id : str):
 
 @app.post("/sensors/{sensor_id}/{value_measured}")
 async def send_sensor_data(sensor_id: str, value_measured: float):
-    await save_sensor_data(sensor_id, value_measured)
+    await save_sensor_data(value_measured)
     return {"sensor id" : sensor_id, "value_measured" : value_measured}
 
 
 
-async def save_sensor_data(sensor_id: str, value_measured: float):
+async def save_sensor_data(value_measured: float):
     new_entry_registry = {"date" : str(datetime.now()), "value": value_measured}
     current_registry = await obtain_data_history()
     if current_registry is None:
-        new_registry = {sensor_id : [new_entry_registry]}
+        new_registry = [new_entry_registry]
     else:
-        current_registry[sensor_id].append(new_entry_registry)
+        current_registry.append(new_entry_registry)
         new_registry = current_registry
-    with open("sensor_value_registry.json", mode="w", encoding="utf-8") as write_file:
-        dump(new_registry, write_file, indent=4)
-    print("Data has been saved", flush=True)
+    with open("sensor_value_registry_without_id.json", mode="w", encoding="utf-8") as write_file:
+        dump(new_registry, write_file, indent=4) 
+    
+    print("Data has been saved")
     return {"message": "Data has been saved"}
 
 async def obtain_data_history():
     try:
-        with open("sensor_value_registry.json", mode="r", encoding="utf-8") as read_file:
+        with open("sensor_value_registry_without_id.json", mode="r", encoding="utf-8") as read_file:
             return load(read_file)
     except:
         print("File does not yet exist")
+        return []

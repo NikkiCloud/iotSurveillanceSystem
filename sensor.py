@@ -20,23 +20,23 @@ class Sensor:
     def display_data(self):
         return f"Last value of sensor {self.id} : {self.last_value}"
     
-    """ def save_data(self):
+    def save_data(self):
         new_entry_registry = {"date" : str(datetime.now()), "value": self.last_value}
         current_registry = self.get_data_history()
         if current_registry is None:
-            new_registry = {self.id : [new_entry_registry]}
+            new_registry = [new_entry_registry]
         else:
-            current_registry[self.id].append(new_entry_registry)
+            current_registry.append(new_entry_registry)
             new_registry = current_registry
-        with open("sensor_value_registry.json", mode="w", encoding="utf-8") as write_file:
-            dump(new_registry, write_file, indent=4) """
-    
-    """ def get_data_history(self):
+        with open("sensor_value_registry_without_id.json", mode="w", encoding="utf-8") as write_file:
+            dump(new_registry, write_file, indent=4) 
+            
+    def get_data_history(self):
         try:
-            with open("sensor_value_registry.json", mode="r", encoding="utf-8") as read_file:
+            with open("sensor_value_registry_without_id.json", mode="r", encoding="utf-8") as read_file:
                 return load(read_file)
         except:
-            print("File does not yet exist") """
+            print("File does not yet exist")
     
     """ def display_history(self):
         try:
@@ -59,16 +59,17 @@ def main():
     
     try:
         temperature_sensor.simulate_data()
+        temperature_sensor.save_data()
         requests.post(f"http://127.0.0.1:5000/sensors/{temperature_sensor.id}/{temperature_sensor.last_value}")
     except SensorStatusError as ss_error:
         print(ss_error)
     else:
         print(temperature_sensor.display_data())
-        reponse : requests.Response = requests.get(f"http://127.0.0.1:5000/history/{temperature_sensor.id}")
-        print(reponse.content)
-        #temperature_sensor.display_history()
-        #temperature_sensor.simulate_send_data_from_sensor_to_api()
-        
+        history_response : requests.Response = requests.get(f"http://127.0.0.1:5000/history/{temperature_sensor.id}")
+        print(history_response.content)
+        last_value_response : requests.Response = requests.get(f"http://127.0.0.1:5000/lastvalue/{temperature_sensor.id}")
+        print(last_value_response.content)
+        print(type(last_value_response.content))
 
 if __name__ == "__main__":
     main()
