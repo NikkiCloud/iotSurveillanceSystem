@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from datetime import datetime
 from json import dump, load
 
@@ -20,7 +20,7 @@ async def get_sensor_data_history(sensor_id : str):
         with open(f"sensor_{sensor_id}_registry.json", mode="r", encoding="utf-8") as read_file:
             return {"history" : load(read_file)}
     except:
-        print("File does not yet exist")
+        raise HTTPException(status_code=404, detail="File does not exist")
 
 
 @app.post("/sensors/{sensor_id}/{value_measured}")
@@ -41,7 +41,6 @@ async def save_sensor_data(sensor_id: str, value_measured: float):
     with open(f"sensor_{sensor_id}_registry.json", mode="w", encoding="utf-8") as write_file:
         dump(new_registry, write_file, indent=4) 
     
-    print("Data has been saved")
     return {"message": "Data has been saved"}
 
 async def obtain_data_history(sensor_id: str):
@@ -49,5 +48,4 @@ async def obtain_data_history(sensor_id: str):
         with open(f"sensor_{sensor_id}_registry.json", mode="r", encoding="utf-8") as read_file:
             return load(read_file)
     except:
-        print("File does not yet exist")
-        return []
+        raise HTTPException(status_code=404, detail="File does not exist")
