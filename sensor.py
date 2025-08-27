@@ -4,7 +4,7 @@ import requests
 
 URL_DE_BASE = "http://127.0.0.1:8000"
 class Sensor:
-    def __init__(self, id, status):
+    def __init__(self, id: str, status: str):
         self.id = id
         self. status = status
         self.last_value = None
@@ -17,13 +17,6 @@ class Sensor:
     
     def display_data(self):
         return f"Last value of sensor {self.id} : {self.last_value}"
-            
-    def get_data_history(self):
-        try:
-            with open("sensor_value_registry_without_id.json", mode="r", encoding="utf-8") as read_file:
-                return load(read_file)
-        except:
-            print("File does not yet exist")
     
     def simulate_get_data_from_api(self):
         reponse = requests.get("https://thingspeak.mathworks.com/channels/159156/feed.json").json()
